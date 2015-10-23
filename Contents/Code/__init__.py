@@ -115,12 +115,15 @@ def AddSections(menu):
             if (len(title) == 0):
                 title = section.xpath(".//h1[contains(concat(' ',@class,' '),' play_videolist-section-header__header')]/a/text()")
             if (len(title) == 0):
+            	Log("AddSections index %i No Title" % (index))
+            	index = index + 1
                 continue;
             i = 0
             while i < len(title):
                 title[i] = title[i].strip()
                 i = i+1
             title = unicode('/'.join(title))
+            Log("AddSections index %i title=%s" % (index, title))
 
             img = ICON
             try:
@@ -143,6 +146,7 @@ def GetSectionEpisodes(index, prevTitle, title):
     section = pageElement.xpath(xpath)[index]
     articles = section.xpath(".//article")
     if articles[0].get("data-title"):
+    	# Log("GetSectionEpisodes for %s - %i, first data-title=%s" % (title, index, articles[0].get("data-title")))
         oc = GetEpisodeObjects(oc, articles, showName=None)
     else:
         for article in articles:
@@ -643,6 +647,8 @@ def GetLiveShowTitle(a):
 def GetEpisodeObjects(oc, articles, showName, stripShow=False, titleFilter=None, seasonFilter=None):
 
     for article in articles:
+        url = FixLink(article.xpath(".//a/@href")[0])
+        thumb = FixLink(article.xpath(".//img/@src")[0].strip())
         if stripShow:
             if len(article.xpath("./div/div[contains(concat(' ',@class,' '),'countdown play_live-countdown')]")) > 0:
                 continue
@@ -654,14 +660,11 @@ def GetEpisodeObjects(oc, articles, showName, stripShow=False, titleFilter=None,
                 title = article.get("data-title")
 
             # Get the longer description when available
-            try: 
-                if not URL_OA_LABEL in url and len(article.get("data-description")) > 0:
+            summary = ""
+            if not URL_OA_LABEL in url and len(article.get("data-description")) > 0:
+                if len(article.xpath("./a/@title")) > 0:
                     summary = unescapeHTML(article.xpath("./a/@title")[0])
-                else:
-                    summary = ""
-            except Exception as e:
-                Log("JTDEBUG new summary failed:%s" % e)
-                summary = ""
+                        
             if len(summary) == 0 and article.get("data-description"):
                 summary = unescapeHTML(article.get("data-description"))
 
@@ -672,8 +675,6 @@ def GetEpisodeObjects(oc, articles, showName, stripShow=False, titleFilter=None,
                 air_date = article.get("data-published")
 
         # Common part
-        url = FixLink(article.xpath(".//a/@href")[0])
-        thumb = FixLink(article.xpath(".//img/@src")[0].strip())
         try: 
             showName = showName.decode('utf-8')
         except: 
@@ -700,7 +701,10 @@ def GetEpisodeObjects(oc, articles, showName, stripShow=False, titleFilter=None,
             seasonInfo = article.xpath(".//h2/a/text()")
         else:
             seasonInfo = article.xpath(".//span[@class='play_videolist-element__subtext']/text()")
-        seasonInfo = re.sub("[	\n]*", "", seasonInfo[0].strip())
+        if len(seasonInfo) > 0:
+            seasonInfo = re.sub("[	\n]*", "", seasonInfo[0].strip())
+        else:
+           seasonInfo = ""
 
         season = None
         if re.search("[Ss]äsong +[0-9]+", seasonInfo):
