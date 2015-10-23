@@ -478,7 +478,7 @@ def CheckSeasons(epList):
         seasonList.sort(key=lambda obj: int(obj), reverse=True)
         for ep in filter(lambda e: e.season == seasonList[0], epList.objects):
             # Remove season from title
-            ep.title = re.sub("Säsong %i[ 	\-:,]*(.+)" % ep.season, "\\1", ep.title, flags=re.IGNORECASE)
+            ep.title = re.sub("SÃ¤song %i[ 	\-:,]*(.+)" % ep.season, "\\1", ep.title, flags=re.IGNORECASE)
             newEpList.add(ep)
         season = seasonList.pop(0)
         seasonList.reverse()
@@ -703,15 +703,15 @@ def GetEpisodeObjects(oc, articles, showName, stripShow=False, titleFilter=None,
         seasonInfo = re.sub("[	\n]*", "", seasonInfo[0].strip())
 
         season = None
-        if re.search("[Ss]äsong +[0-9]+", seasonInfo):
-            season = int(re.sub(".*Säsong +([0-9]+).*", "\\1", seasonInfo))
+        if re.search("[Ss]Ã¤song +[0-9]+", seasonInfo):
+            season = int(re.sub(".*SÃ¤song +([0-9]+).*", "\\1", seasonInfo))
 
         if isinstance(seasonFilter, int):
             if season != seasonFilter:
                 continue
             else:
                 # Remove season from title
-                title = re.sub("Säsong %i[ 	\-:,]*(.+)" % season, "\\1", title, flags=re.IGNORECASE)
+                title = re.sub("SÃ¤song %i[ 	\-:,]*(.+)" % season, "\\1", title, flags=re.IGNORECASE)
 
         episode = None
         if re.search("[Aa]vsnitt +[0-9]+", seasonInfo):
